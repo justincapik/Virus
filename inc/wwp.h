@@ -14,6 +14,8 @@
 # include <sys/mman.h>
 # include <sys/stat.h>
 
+//# define ALIGN_4096(x) (4096 - (x % 4096)) FUCCCCKKKKK YOUUUUUUUUUU WIUYRGCBOWIUYBCQWIUYEB DEFINE
+
 typedef struct	s_file_data
 {
 	char		*ptr;
@@ -36,8 +38,8 @@ int				write_woody(char *ptr, off_t size, char *filename);
 
 // ----------------PATCHER----------------
 void			AddrPatcher(u_int8_t *parasite, long placeholder, long address);
-void			ModifyNOTEphdr(void *ptr);
-void			ModifyNOTEshdr(void *ptr);
+void			ModifyNOTEphdr(void *ptr, int size);
+void			ModifyNOTEshdr(void *ptr, int size);
 
 // ----------------INFECTOR---------------
 void			ParasiteLoader(char *parasite_path);

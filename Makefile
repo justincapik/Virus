@@ -16,7 +16,7 @@ ASM_NAME = 		payload
 OBJ_DIR  =		./obj/C/
 ASM_OBJ_DIR  =	./obj/ASM/
 
-SRC_WWP_DIR =	./woody_src/
+SRC_WWP_DIR =	./src/
 SRC_WWP = 		infector.c\
 				main.c\
 				patcher.c\
