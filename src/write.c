@@ -10,7 +10,6 @@ int			write_woody(char *ptr, off_t size, char *filename)
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) ptr;
 	HOST_IS_EXECUTABLE = 0;	// Host is LSB Executable and not Shared Object
 
-	parasite_start = 4096 - (size % 4096) + size; // align on 4096
 
 	// Identify the binary & SKIP Relocatable, files and 32-bit class of binaries
 	if (ehdr->e_type == ET_REL || ehdr->e_type == ET_CORE)
@@ -30,8 +29,17 @@ int			write_woody(char *ptr, off_t size, char *filename)
 	// MODIFYING SECTION HEADER
 	// ###################################################################################################################
 
-	ModifyNOTEphdr(ptr, size);
-	ModifyNOTEshdr(ptr, size);
+	int bss_size = get_bss_size(ptr);
+	ehdr->e_shoff += parasite_size + bss_size;
+	ehdr->e_entry = gestiondataphdr(ptr) + bss_size;
+	parasite_start = ehdr->e_entry;
+	
+	dprintf(2, "bss size = %d, parasite_start = 0x%x, entry = %x\n",
+		bss_size, parasite_start, ehdr->e_entry);
+	
+	
+	//ModifyNOTEphdr(ptr, size);
+	//ModifyNOTEshdr(ptr, size);
 
 	
 
@@ -43,7 +51,7 @@ int			write_woody(char *ptr, off_t size, char *filename)
 	dprintf(2, "entry => %xx0\n", ehdr->e_entry);	
 	// Patch Parasite with entrypoint and .text start
 	Elf64_Addr original_entry_point = ehdr->e_entry;
-	ehdr->e_entry = parasite_start;
+	//ehdr->e_entry = parasite_start;
 	AddrPatcher(parasite_code, 0xAAAAAAAAAAAAAAAA, parasite_start - original_entry_point);
 	//AddrPatcher(parasite_code, 0x1111111111111111, textend - load_textoff);
 
@@ -55,7 +63,7 @@ int			write_woody(char *ptr, off_t size, char *filename)
 
 	//write memory in a new file
 	int fd;
-	if ((fd = open("woody", O_WRONLY | O_CREAT | O_TRUNC, 0644)) == -1)
+	if ((fd = open("woody", O_RDWR | O_CREAT | O_TRUNC, 0644)) == -1)
 		return (1);
 
 	// ###################################################################################################################
@@ -72,11 +80,7 @@ int			write_woody(char *ptr, off_t size, char *filename)
 	write(fd, ptr, size);
 	
 	//write(fd, "test", 4);
-	for (int i = 0; i < 4096 - (size % 4096); ++i)
-		write(fd, "\0", 1);	
 	write(fd, parasite_code, parasite_size);
-	for (int i = 0; i < 4096 - (parasite_size % 4096); ++i)
-		write(fd, "\0", 1);	
 	close(fd);
 
 	fprintf(stdout, BOLDCYAN"<o>"RESET YELLOW" success \\o/  :  "CYAN"%s\n"RESET, filename);

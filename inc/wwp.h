@@ -40,6 +40,8 @@ int				write_woody(char *ptr, off_t size, char *filename);
 void			AddrPatcher(u_int8_t *parasite, long placeholder, long address);
 void			ModifyNOTEphdr(void *ptr, int size);
 void			ModifyNOTEshdr(void *ptr, int size);
+int			gestiondataphdr(void *ptr);
+int			get_bss_size(ptr);
 
 // ----------------INFECTOR---------------
 void			ParasiteLoader(char *parasite_path);
